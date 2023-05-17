@@ -5,31 +5,26 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Document(collection = "Restaurant_Menu")
-public class Restaurant_Menu {
+public class Restaurant_Menu_Price {
     @Id
     private String id;
     @Field("NAME")
     private String name;
-    @Field("MENU")
-    private String[] menu;
-    @Field("PRICE")
-    private String[] price;
-    @Field("FOODTYPE")
-    private String[] foodtype;
+    @Field("MAIN_PRICE")
+    private List<Integer> mainprice;
 
     // 생성자, 게터(getter), 세터(setter), toString() 등의 필요한 메서드를 추가합니다
 
-    public Restaurant_Menu() {
+    public Restaurant_Menu_Price() {
         // 기본 생성자
     }
 
-    public Restaurant_Menu(String name, String menu[], String price[], String foodtype[]) {
+    public Restaurant_Menu_Price(String name, List<Integer> mainprice) {
         this.name = name;
-        this.menu = menu;
-        this.price = price;
-        this.foodtype = foodtype;
+        this.mainprice = mainprice;
     }
 
     // getter, setter, toString 등의 메서드 추가
@@ -44,7 +39,6 @@ public class Restaurant_Menu {
     public void setId(String id) {
         this.id = id;
     }
-
     public String getName() {
         return name;
     }
@@ -53,38 +47,20 @@ public class Restaurant_Menu {
         this.name = name;
     }
 
-    public String[] getMenu() {
-        return menu;
+    public List<Integer> getMainprice() {
+        return mainprice;
     }
 
-    public void setMenu(String[] menu) {
-        this.menu = menu;
-    }
-
-    public String[] getPrice() {
-        return price;
-    }
-
-    public void setPrice(String[] price) {
-        this.price = price;
-    }
-
-    public String[] getFoodtype() {
-        return foodtype;
-    }
-
-    public void setFoodtype(String[] foodtype) {
-        this.foodtype = foodtype;
+    public void setMainprice(List<Integer> mainprice) {
+        this.mainprice = mainprice;
     }
 
     @Override
     public String toString() {
         return "Restaurant{" +
                 "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", location='" + menu + '\'' +
-                ", time='" + price + '\'' +
-                ", foodtype='" + foodtype + '\'' +
+                "id='" + name + '\'' +
+                ", mainprice='" + mainprice + '\'' +
                 '}';
     }
 }
