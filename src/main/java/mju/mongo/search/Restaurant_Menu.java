@@ -12,10 +12,10 @@ public class Restaurant_Menu {
     private String id;
     @Field("NAME")
     private String name;
-    @Field("MENU")
-    private String[] menu;
-    @Field("PRICE")
-    private String[] price;
+    @Field("MAIN_MENU")
+    private String[] mainmenu;
+    @Field("SIDE_MENU")
+    private String[] sidemenu;
     @Field("FOODTYPE")
     private String[] foodtype;
 
@@ -25,10 +25,10 @@ public class Restaurant_Menu {
         // 기본 생성자
     }
 
-    public Restaurant_Menu(String name, String menu[], String price[], String foodtype[]) {
+    public Restaurant_Menu(String name, String mainmenu[], String sidemenu[], String foodtype[]) {
         this.name = name;
-        this.menu = menu;
-        this.price = price;
+        this.mainmenu = mainmenu;
+        this.sidemenu = sidemenu;
         this.foodtype = foodtype;
     }
 
@@ -53,20 +53,20 @@ public class Restaurant_Menu {
         this.name = name;
     }
 
-    public String[] getMenu() {
-        return menu;
+    public String[] getMainMenu() {
+        return mainmenu;
     }
 
-    public void setMenu(String[] menu) {
-        this.menu = menu;
+    public void setMainMenu(String[] mainmenu) {
+        this.mainmenu = mainmenu;
     }
 
-    public String[] getPrice() {
-        return price;
+    public String[] getSideMenu() {
+        return sidemenu;
     }
 
-    public void setPrice(String[] price) {
-        this.price = price;
+    public void setSideMenu(String[] sidemenu) {
+        this.sidemenu = sidemenu;
     }
 
     public String[] getFoodtype() {
@@ -82,8 +82,8 @@ public class Restaurant_Menu {
         return "Restaurant{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", location='" + menu + '\'' +
-                ", time='" + price + '\'' +
+                ", mainmenu='" + mainmenu + '\'' +
+                ", sidemenu='" + sidemenu + '\'' +
                 ", foodtype='" + foodtype + '\'' +
                 '}';
     }

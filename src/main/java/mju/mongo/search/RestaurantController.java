@@ -34,6 +34,12 @@ public class RestaurantController {
         KomoranResult komoranResult = komoran.analyze(searchValue);
         List<String> nouns = komoranResult.getNouns();
 
+        //집이라는 단어 삭제
+        for(int i=0;i<nouns.size();i++){
+            String str = nouns.get(i);
+            if(str.equals("집")) nouns.remove(i);
+        }
+
         //4자리 이상 숫자 뽑기
         Pattern pattern = Pattern.compile("\\b(\\d{4,})\\b"); // 4자리 이상 숫자 패턴
         Matcher matcher = pattern.matcher(searchValue);
@@ -82,7 +88,7 @@ public class RestaurantController {
                 restaurantIds.add(restaurantInformation.getName());
             }
 
-            List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByNameContainingOrMenuContainingOrFoodtypeContaining(noun, noun, noun, noun);
+            List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByNameContainingOrMainmenuContainingOrSidemenuContainingOrFoodtypeContaining(noun, noun, noun, noun);
             for (Restaurant_Menu restaurantMenu : restaurantMenuList) {
                 restaurantIds.add(restaurantMenu.getName());
             }
@@ -97,7 +103,7 @@ public class RestaurantController {
                     norestaurant.add(restaurantInformation.getName());
                 }
 
-                List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByNameContainingOrMenuContainingOrFoodtypeContaining(noun, noun, noun, noun);
+                List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByNameContainingOrMainmenuContainingOrSidemenuContainingOrFoodtypeContaining(noun, noun, noun, noun);
                 for (Restaurant_Menu restaurantMenu : restaurantMenuList) {
                     norestaurant.add(restaurantMenu.getName());
                 }
