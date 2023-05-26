@@ -34,11 +34,9 @@ public class RestaurantController {
         KomoranResult komoranResult = komoran.analyze(searchValue);
         List<String> nouns = komoranResult.getNouns();
 
-        //집이라는 단어 삭제
-        for(int i=0;i<nouns.size();i++){
-            String str = nouns.get(i);
-            if(str.equals("집")) nouns.remove(i);
-        }
+        Set<String> restaurantIds = new HashSet<>();
+        List<String> restaurantTypes = new ArrayList<>();
+
 
         //4자리 이상 숫자 뽑기
         Pattern pattern = Pattern.compile("\\b(\\d{4,})\\b"); // 4자리 이상 숫자 패턴
@@ -51,17 +49,48 @@ public class RestaurantController {
         }
 
 
-        //예외상황 제외 (싫은 음식들)
-        String[] SearchNoSpace = searchValue.split(" "); //띄어쓰기 빼고 단어 추출
+        //띄어쓰기 빼고 단어 추출
+        String[] SearchNoSpace = searchValue.split(" ");
         List<String> noSearch = new ArrayList<>();
 
+
+        //뺄 단어들 리스트
+        List<String> noSearchNouns = new ArrayList<>();
+
+
+        //천원과 만원으로 숫자 뽑기
+        for (String value : SearchNoSpace) {
+            if (value.matches("\\d천원")) {
+                int intValue = Integer.parseInt(value.replace("천원", ""));
+                noSearchNouns.add("천원");
+                quantityThreshold = intValue * 1000;
+            }
+            if (value.matches("\\d만원")) {
+                int intValue = Integer.parseInt(value.replace("만원", ""));
+                noSearchNouns.add("만원");
+                quantityThreshold = intValue * 10000;;
+            }
+        }
+
+        //완전 똑같은 메뉴로 검색할 시 검색어 저장
+        for (String noun : SearchNoSpace) {
+            List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByNameContainingOrLocationContainingOrTimeContaining(noun, noun, noun, noun);
+            if (!restaurantInformationList.isEmpty()) {
+                nouns.add(noun);
+            }
+
+            List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByNameContainingOrMainmenuContainingOrSidemenuContainingOrFoodtypeContaining(noun, noun, noun, noun);
+            if (!restaurantMenuList.isEmpty()) {
+                nouns.add(noun);
+            }
+        }
+
+        //예외상황 제외 (싫은 음식들)
         for (int i = 1; i < SearchNoSpace.length; i++) {
             if (SearchNoSpace[i].equals("말고") || SearchNoSpace[i].equals("제외하고") || SearchNoSpace[i].equals("제외") || SearchNoSpace[i].equals("싫어") || SearchNoSpace[i].equals("싫고") || SearchNoSpace[i].equals("못먹어") || SearchNoSpace[i].equals("못먹고") || SearchNoSpace[i].equals("빼고") || SearchNoSpace[i].equals("제외하고")) {
                 noSearch.add(SearchNoSpace[i-1]);
             }
         }
-
-        List<String> noSearchNouns = new ArrayList<>();
 
         for (String word : noSearch) {
             List<Token> tokens = komoran.analyze(word).getTokenList();
@@ -74,10 +103,14 @@ public class RestaurantController {
         //문장에서 단어들 제외하기
         //nouns.removeAll(noSearchNouns);
 
-        Set<String> restaurantIds = new HashSet<>();
-        List<String> restaurantTypes = new ArrayList<>();
 
 
+
+        //집이라는 단어 삭제
+        for(int i=0;i<nouns.size();i++){
+            String str = nouns.get(i);
+            if(str.equals("집")) nouns.remove(i);
+        }
 
 
 
@@ -137,7 +170,7 @@ public class RestaurantController {
         }
 
 
-        //return new ArrayList<>(restaurantIds);
         return new ArrayList<>(restaurantIds);
+        //return nouns;
     }
 }
