@@ -4,7 +4,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Document(collection = "Restaurant_Menu")
@@ -15,6 +14,8 @@ public class Restaurant_Menu_Price {
     private String name;
     @Field("MAIN_PRICE")
     private List<Integer> mainprice;
+    @Field("SIDE_PRICE")
+    private List<Integer> sideprice;
 
     // 생성자, 게터(getter), 세터(setter), toString() 등의 필요한 메서드를 추가합니다
 
@@ -53,6 +54,14 @@ public class Restaurant_Menu_Price {
 
     public void setMainprice(List<Integer> mainprice) {
         this.mainprice = mainprice;
+    }
+
+    public List<Integer> getSideprice() {
+        return sideprice;
+    }
+
+    public void setSideprice(List<Integer> sideprice) {
+        this.sideprice = sideprice;
     }
 
     @Override

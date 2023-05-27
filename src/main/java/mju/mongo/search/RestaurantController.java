@@ -11,6 +11,7 @@ import kr.co.shineware.nlp.komoran.model.Token;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 public class RestaurantController {
@@ -68,7 +69,8 @@ public class RestaurantController {
             if (value.matches("\\d만원")) {
                 int intValue = Integer.parseInt(value.replace("만원", ""));
                 noSearchNouns.add("만원");
-                quantityThreshold = intValue * 10000;;
+                quantityThreshold = intValue * 10000;
+                ;
             }
         }
 
@@ -88,7 +90,7 @@ public class RestaurantController {
         //예외상황 제외 (싫은 음식들)
         for (int i = 1; i < SearchNoSpace.length; i++) {
             if (SearchNoSpace[i].equals("말고") || SearchNoSpace[i].equals("제외하고") || SearchNoSpace[i].equals("제외") || SearchNoSpace[i].equals("싫어") || SearchNoSpace[i].equals("싫고") || SearchNoSpace[i].equals("못먹어") || SearchNoSpace[i].equals("못먹고") || SearchNoSpace[i].equals("빼고") || SearchNoSpace[i].equals("제외하고")) {
-                noSearch.add(SearchNoSpace[i-1]);
+                noSearch.add(SearchNoSpace[i - 1]);
             }
         }
 
@@ -104,14 +106,11 @@ public class RestaurantController {
         //nouns.removeAll(noSearchNouns);
 
 
-
-
         //집이라는 단어 삭제
-        for(int i=0;i<nouns.size();i++){
+        for (int i = 0; i < nouns.size(); i++) {
             String str = nouns.get(i);
-            if(str.equals("집")) nouns.remove(i);
+            if (str.equals("집")) nouns.remove(i);
         }
-
 
 
         // 추출한 명사들로 검색 수행
@@ -129,7 +128,7 @@ public class RestaurantController {
 
         Set<String> norestaurant = new HashSet<>();
         //만약 제외할 단어가 있을 시에
-        if(!noSearchNouns.isEmpty()) {
+        if (!noSearchNouns.isEmpty()) {
             for (String noun : noSearchNouns) {
                 List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByNameContainingOrLocationContainingOrTimeContaining(noun, noun, noun, noun);
                 for (Restaurant_Information restaurantInformation : restaurantInformationList) {
@@ -148,7 +147,7 @@ public class RestaurantController {
         int quantityThresholdStr = Integer.parseInt(String.valueOf(quantityThreshold));
 
         //얼마 이상, 이하인 음식점 검색
-        if(nouns.indexOf("초과") != -1 || nouns.indexOf("이상") != -1) {
+        if (nouns.indexOf("초과") != -1 || nouns.indexOf("이상") != -1) {
             List<Restaurant_Menu_Price> restaurantMenuFoodtypeList = restaurantMenuFoodpriceRepository.findByMainpriceGreaterThanEqual(quantityThresholdStr);
             for (Restaurant_Menu_Price restaurantMenuFoodtype : restaurantMenuFoodtypeList) {
                 restaurantTypes.add(restaurantMenuFoodtype.getName());
@@ -160,7 +159,7 @@ public class RestaurantController {
                 restaurantTypes.add(restaurantMenuFoodtype.getName());
             }
             restaurantIds.retainAll(restaurantTypes);
-        }else if (quantityThreshold != 0) {
+        } else if (quantityThreshold != 0) {
             List<Restaurant_Menu_Price> restaurantMenuFoodtypeList = restaurantMenuFoodpriceMain.findByMainprice(quantityThresholdStr);
             for (Restaurant_Menu_Price restaurantMenuFoodtype : restaurantMenuFoodtypeList) {
                 restaurantTypes.add(restaurantMenuFoodtype.getName());
@@ -188,5 +187,51 @@ public class RestaurantController {
 
         //return new ArrayList<>(restaurantIds);
         //return nouns;
+    }
+
+    @GetMapping("/RestaurantInfo")
+    public List<Map<String, String>> searchRestaurantINFO(@RequestParam("searchID") String searchID) {
+
+
+        List<Map<String, String>> resultList = new ArrayList<>();
+
+
+        List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByIdAsString(searchID);
+        List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByIdAsString(searchID);
+        List<Restaurant_Menu_Price> restaurantMenuPriceList = restaurantMenuFoodpriceMain.findByIdAsString(searchID);
+
+        Map<String, String> infoMap = new HashMap<>();
+
+        for (Restaurant_Information restaurantInformation : restaurantInformationList) {
+            infoMap.put("ID", restaurantInformation.getId());
+            infoMap.put("NAME", restaurantInformation.getName());
+            infoMap.put("LOCATION", restaurantInformation.getLocation());
+            infoMap.put("TIME", restaurantInformation.getTime());
+        }
+        for (Restaurant_Menu restaurantInformation : restaurantMenuList) {
+            infoMap.put("MAINMENU", String.join(", ", restaurantInformation.getMainMenu()));
+            infoMap.put("SIDEMENU", String.join(", ", restaurantInformation.getSideMenu()));
+        }
+        for (Restaurant_Menu_Price restaurantInformation : restaurantMenuPriceList) {
+
+            List<Integer> mainprice = restaurantInformation.getMainprice();
+            String mainpriceString = mainprice.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+            infoMap.put("MAINPRICE", mainpriceString);
+
+            List<Integer> sideprice = restaurantInformation.getSideprice();
+            String sidepriceString = sideprice.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+            infoMap.put("SIDEPRICE", sidepriceString);
+
+            //infoMap.put("MAINMENU", Arrays.toString(restaurantInformation.getMainprice()));
+            //infoMap.put("SIDEMENU", Arrays.toString(restaurantInformation.getSideprice()));
+        }
+
+        List<Map<String, String>> result = new ArrayList<>();
+        result.add(infoMap);
+        return result;
     }
 }
