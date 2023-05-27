@@ -28,7 +28,7 @@ public class RestaurantController {
     private RestaurantMenuPriceMain restaurantMenuFoodpriceMain;
 
     @GetMapping("/searchRestaurant")
-    public List<String> searchRestaurant(@RequestParam("searchValue") String searchValue) {
+    public List<Map<String, String>> searchRestaurant(@RequestParam("searchValue") String searchValue) {
         // 코모란을 사용하여 명사 추출
         Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
         KomoranResult komoranResult = komoran.analyze(searchValue);
@@ -169,8 +169,24 @@ public class RestaurantController {
             restaurantIds.retainAll(restaurantTypes);
         }
 
+        List<Map<String, String>> resultList = new ArrayList<>();
 
-        return new ArrayList<>(restaurantIds);
+        for (String noun : restaurantIds) {
+            List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByNameContainingOrLocationContainingOrTimeContaining(noun, noun, noun, noun);
+            for (Restaurant_Information restaurantInformation : restaurantInformationList) {
+                Map<String, String> infoMap = new HashMap<>();
+                infoMap.put("ID", restaurantInformation.getId());
+                infoMap.put("NAME", restaurantInformation.getName());
+                infoMap.put("LOCATION", restaurantInformation.getLocation());
+                infoMap.put("TIME", restaurantInformation.getTime());
+                resultList.add(infoMap);
+            }
+        }
+
+        return resultList;
+
+
+        //return new ArrayList<>(restaurantIds);
         //return nouns;
     }
 }
