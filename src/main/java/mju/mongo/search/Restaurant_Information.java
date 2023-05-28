@@ -16,6 +16,10 @@ public class Restaurant_Information {
     private String time;
     @Field("NUMBER")
     private String number;
+    @Field("LAT")
+    private Float lat;
+    @Field("LNG")
+    private Float lng;
 
     // 생성자, 게터(getter), 세터(setter), toString() 등의 필요한 메서드를 추가합니다
 
@@ -73,6 +77,18 @@ public class Restaurant_Information {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public Float getLat() { return lat; }
+
+    public void setLat(Float lat){
+        this.lat = lat;
+    }
+
+    public Float getLng() { return lng; }
+
+    public void setLng(Float lng){
+        this.lng = lng;
     }
 
     @Override

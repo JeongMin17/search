@@ -8,6 +8,9 @@ import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
 
+
+
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -190,17 +193,21 @@ public class RestaurantController {
     }
 
     @GetMapping("/RestaurantInfo")
-    public List<Map<String, String>> searchRestaurantINFO(@RequestParam("searchID") String searchID) {
-
-
+    public Map<String, Object> searchRestaurantINFO(@RequestParam("searchID") String searchID) {
         List<Map<String, String>> resultList = new ArrayList<>();
-
-
         List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByIdAsString(searchID);
         List<Restaurant_Menu> restaurantMenuList = restaurantMenuRepository.findByIdAsString(searchID);
         List<Restaurant_Menu_Price> restaurantMenuPriceList = restaurantMenuFoodpriceMain.findByIdAsString(searchID);
 
         Map<String, String> infoMap = new HashMap<>();
+        Map<String, Float> infoMaplatlng = new HashMap<>();
+        Map<String, String[]> infoMenu = new HashMap<>();
+        Map<String, List<Integer>> infoMenuPrice = new HashMap<>();
+
+        for (Restaurant_Information restaurantInformation : restaurantInformationList) {
+            infoMaplatlng.put("lat", restaurantInformation.getLat());
+            infoMaplatlng.put("lng", restaurantInformation.getLng());
+        }
 
         for (Restaurant_Information restaurantInformation : restaurantInformationList) {
             infoMap.put("ID", restaurantInformation.getId());
@@ -208,30 +215,37 @@ public class RestaurantController {
             infoMap.put("LOCATION", restaurantInformation.getLocation());
             infoMap.put("TIME", restaurantInformation.getTime());
         }
+
         for (Restaurant_Menu restaurantInformation : restaurantMenuList) {
-            infoMap.put("MAINMENU", String.join(", ", restaurantInformation.getMainMenu()));
-            infoMap.put("SIDEMENU", String.join(", ", restaurantInformation.getSideMenu()));
+            infoMenu.put("MAINMENU", restaurantInformation.getMainMenu());
+            infoMenu.put("SIDEMENU", restaurantInformation.getSideMenu());
         }
+
         for (Restaurant_Menu_Price restaurantInformation : restaurantMenuPriceList) {
-
-            List<Integer> mainprice = restaurantInformation.getMainprice();
-            String mainpriceString = mainprice.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", "));
-            infoMap.put("MAINPRICE", mainpriceString);
-
-            List<Integer> sideprice = restaurantInformation.getSideprice();
-            String sidepriceString = sideprice.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", "));
-            infoMap.put("SIDEPRICE", sidepriceString);
-
-            //infoMap.put("MAINMENU", Arrays.toString(restaurantInformation.getMainprice()));
-            //infoMap.put("SIDEMENU", Arrays.toString(restaurantInformation.getSideprice()));
+            infoMenuPrice.put("MAINPRICE", restaurantInformation.getMainprice());
+            infoMenuPrice.put("SIDEPRICE", restaurantInformation.getSideprice());
         }
 
-        List<Map<String, String>> result = new ArrayList<>();
-        result.add(infoMap);
-        return result;
+
+
+        //for (Restaurant_Menu restaurantInformation : restaurantMenuList) {
+        //    infoMap.put("MAINMENU", Collections.singletonList(String.join(", ", restaurantInformation.getMainMenu())).toString());
+        //    infoMap.put("SIDEMENU", Collections.singletonList(String.join(", ", restaurantInformation.getSideMenu())).toString());
+        //}
+
+        //for (Restaurant_Menu_Price restaurantInformation : restaurantMenuPriceList) {
+        //    List<Integer> mainprice = restaurantInformation.getMainprice();
+        //    infoMap.put("MAINPRICE", mainprice.toString());
+        //    List<Integer> sideprice = restaurantInformation.getSideprice();
+        //    infoMap.put("SIDEPRICE", sideprice.toString());
+        //}
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("info", infoMap);
+        resultMap.put("infoMap", infoMaplatlng);
+        resultMap.put("infoMenu", infoMenu);
+        resultMap.put("infoMenuPrice", infoMenuPrice);
+
+        return resultMap;
     }
 }
