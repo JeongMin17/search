@@ -17,6 +17,7 @@ public class Restaurant_Menu {
     @Field("FOODTYPE")
     private String[] foodtype;
 
+
     // 생성자, 게터(getter), 세터(setter), toString() 등의 필요한 메서드를 추가합니다
 
     public Restaurant_Menu() {
@@ -74,6 +75,8 @@ public class Restaurant_Menu {
     public void setFoodtype(String[] foodtype) {
         this.foodtype = foodtype;
     }
+
+
 
     @Override
     public String toString() {

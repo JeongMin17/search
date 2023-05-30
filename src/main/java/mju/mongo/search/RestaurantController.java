@@ -32,7 +32,7 @@ public class RestaurantController {
     private RestaurantMenuPriceMain restaurantMenuFoodpriceMain;
 
     @GetMapping("/searchRestaurant")
-    public List<Map<String, String>> searchRestaurant(@RequestParam("searchValue") String searchValue) {
+    public Map<String, Object> searchRestaurant(@RequestParam("searchValue") String searchValue) {
         // 코모란을 사용하여 명사 추출
         Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
         KomoranResult komoranResult = komoran.analyze(searchValue);
@@ -171,27 +171,38 @@ public class RestaurantController {
             restaurantIds.retainAll(restaurantTypes);
         }
 
-        List<Map<String, String>> resultList = new ArrayList<>();
+        Map<String, String> resultList = new HashMap<>();
+        Map<String, Float> rateList = new HashMap<>();
 
         for (String noun : restaurantIds) {
             List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByNameContainingOrLocationContainingOrTimeContaining(noun, noun, noun, noun);
             for (Restaurant_Information restaurantInformation : restaurantInformationList) {
                 Map<String, String> infoMap = new HashMap<>();
-                infoMap.put("ID", restaurantInformation.getId());
-                infoMap.put("NAME", restaurantInformation.getName());
-                infoMap.put("LOCATION", restaurantInformation.getLocation());
-                infoMap.put("TIME", restaurantInformation.getTime());
-                infoMap.put("NUMBER", restaurantInformation.getNumber());
-                resultList.add(infoMap);
+                resultList.put("ID", restaurantInformation.getId());
+                resultList.put("NAME", restaurantInformation.getName());
+                resultList.put("LOCATION", restaurantInformation.getLocation());
+                resultList.put("TIME", restaurantInformation.getTime());
+                resultList.put("NUMBER", restaurantInformation.getNumber());
+            }
+        }
+        for (String noun : restaurantIds) {
+            List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByNameContainingOrLocationContainingOrTimeContaining(noun, noun, noun, noun);
+            for (Restaurant_Information restaurantInformation : restaurantInformationList) {
+                rateList.put("RATE", restaurantInformation.getRate());
             }
         }
 
-        return resultList;
+            Map<String, Object> result = new HashMap<>();
+            result.put("info", resultList);
+            result.put("infoMap", rateList);
+
+            return result;
 
 
         //return new ArrayList<>(restaurantIds);
         //return nouns;
     }
+
 
     @GetMapping("/RestaurantInfo")
     public Map<String, Object> searchRestaurantINFO(@RequestParam("searchID") String searchID) {

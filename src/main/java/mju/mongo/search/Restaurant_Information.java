@@ -20,6 +20,9 @@ public class Restaurant_Information {
     private Float lat;
     @Field("LNG")
     private Float lng;
+    @Field("RATE")
+    private Float rate;
+
 
     // 생성자, 게터(getter), 세터(setter), toString() 등의 필요한 메서드를 추가합니다
 
@@ -91,6 +94,8 @@ public class Restaurant_Information {
         this.lng = lng;
     }
 
+    public Float getRate(){return rate;}
+    public void setRate(Float rate){this.rate = rate;}
     @Override
     public String toString() {
         return "Restaurant{" +
