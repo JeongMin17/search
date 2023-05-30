@@ -194,7 +194,7 @@ public class RestaurantController {
 
             Map<String, Object> result = new HashMap<>();
             result.put("info", resultList);
-            result.put("infoMap", rateList);
+            result.put("infoRate", rateList);
 
             return result;
 
@@ -223,7 +223,7 @@ public class RestaurantController {
         }
 
         for (Restaurant_Information restaurantInformation : restaurantInformationList) {
-            infoRate.put("LATE", restaurantInformation.getRate());
+            infoRate.put("RATE", restaurantInformation.getRate());
         }
 
 
