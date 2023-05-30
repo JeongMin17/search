@@ -181,6 +181,7 @@ public class RestaurantController {
                 infoMap.put("NAME", restaurantInformation.getName());
                 infoMap.put("LOCATION", restaurantInformation.getLocation());
                 infoMap.put("TIME", restaurantInformation.getTime());
+                infoMap.put("NUMBER", restaurantInformation.getNumber());
                 resultList.add(infoMap);
             }
         }
