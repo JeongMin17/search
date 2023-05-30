@@ -213,6 +213,7 @@ public class RestaurantController {
 
         Map<String, String> infoMap = new HashMap<>();
         Map<String, Float> infoMaplatlng = new HashMap<>();
+        Map<String, Float> infoRate = new HashMap<>();
         Map<String, String[]> infoMenu = new HashMap<>();
         Map<String, List<Integer>> infoMenuPrice = new HashMap<>();
 
@@ -220,6 +221,13 @@ public class RestaurantController {
             infoMaplatlng.put("lat", restaurantInformation.getLat());
             infoMaplatlng.put("lng", restaurantInformation.getLng());
         }
+
+        for (Restaurant_Information restaurantInformation : restaurantInformationList) {
+            infoRate.put("LATE", restaurantInformation.getRate());
+        }
+
+
+
 
         for (Restaurant_Information restaurantInformation : restaurantInformationList) {
             infoMap.put("ID", restaurantInformation.getId());
@@ -257,6 +265,7 @@ public class RestaurantController {
         resultMap.put("infoMap", infoMaplatlng);
         resultMap.put("infoMenu", infoMenu);
         resultMap.put("infoMenuPrice", infoMenuPrice);
+        resultMap.put("infoRate", infoRate);
 
         return resultMap;
     }
