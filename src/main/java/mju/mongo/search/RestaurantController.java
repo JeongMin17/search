@@ -24,7 +24,7 @@ public class RestaurantController {
     @Autowired
     private RestaurantMenuPriceMain restaurantMenuFoodpriceMain;
     @GetMapping("/searchRestaurant")
-    public String searchRestaurant(@RequestParam("searchValue") String searchValue) {
+    public List<Map<String, Object>> searchRestaurant(@RequestParam("searchValue") String searchValue) {
         // 코모란을 사용하여 명사 추출
         Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
         KomoranResult komoranResult = komoran.analyze(searchValue);
@@ -89,6 +89,7 @@ public class RestaurantController {
         for (int i = 0; i < nouns.size(); i++) {
             String str = nouns.get(i);
             if (str.equals("집")) nouns.remove(i);
+            if (str.equals("밥")) nouns.remove(i);
         }
         // 추출한 명사들로 검색 수행
         for (String noun : nouns) {
@@ -163,7 +164,7 @@ public class RestaurantController {
                 weight.add(restaurantInformation.getSingle());
                 weight.add(restaurantInformation.getLowcost());
 
-                infoWeight.put(restaurantInformation.getId(),weight);
+                infoWeight.put(restaurantInformation.getId(), weight);
 
                 resultRate.add(infoRate);
                 resultList.add(infoMap);
@@ -191,11 +192,11 @@ public class RestaurantController {
         //return combinedList;
 
 
-        List<String> Health = Arrays.asList("건강","영양","위생","청결","채소","저칼로리","바프","건강한","위생적인","다이어트","깨끗한","채식","건강하게","웰빙","식단");
-        List<String> date = Arrays.asList("데이트","인스타","감성","애인","연인","갬성","여자친구","남자친구","여친","남친","인스타그램","데이트장소","데이트코스","만남","인테리어","분위기");
-        List<String> meeting = Arrays.asList("모임","개강파티","파티","소주","회식","가족","모여서","다같이","동료","가족모임","신나게","단체","단체석","생일","넓은");
-        List<String> single = Arrays.asList("혼밥","조용한","조용히","혼자","간단히","홀로","간편히","간편하게","여유롭게","가볍게","고독","한끼","편한","혼자서","간단하게");
-        List<String> lowcost = Arrays.asList("가성비","싸고","저렴","저렴한","싸게","물가","저렴하게","혜자","갓성비","효율적인","가격대비","대학생","낮은가격","부담없이","학생","거지");
+        List<String> Health = Arrays.asList("건강", "영양", "위생", "청결", "채소", "저칼로리", "바프", "건강한", "위생적인", "다이어트", "깨끗한", "채식", "건강하게", "웰빙", "식단");
+        List<String> date = Arrays.asList("데이트", "인스타", "감성", "애인", "연인", "갬성", "여자친구", "남자친구", "여친", "남친", "인스타그램", "데이트장소", "데이트코스", "만남", "인테리어", "분위기");
+        List<String> meeting = Arrays.asList("모임", "개강파티", "파티", "소주", "회식", "가족", "모여서", "다같이", "동료", "가족모임", "신나게", "단체", "단체석", "생일", "넓은");
+        List<String> single = Arrays.asList("혼밥", "조용한", "조용히", "혼자", "간단히", "홀로", "간편히", "간편하게", "여유롭게", "가볍게", "고독", "한끼", "편한", "혼자서", "간단하게");
+        List<String> lowcost = Arrays.asList("가성비", "싸고", "저렴", "저렴한", "싸게", "물가", "저렴하게", "혜자", "갓성비", "효율적인", "가격대비", "대학생", "낮은가격", "부담없이", "학생", "거지");
 
 
         List<List<String>> lists = Arrays.asList(Health, date, meeting, single, lowcost);
@@ -217,7 +218,14 @@ public class RestaurantController {
                 }
             }
         }
+
+        List<Map<String, String>> WresultList = new ArrayList<>();
+        List<Map<String, Float>> WresultRate = new ArrayList<>();
+
         List<Integer> indexList = new ArrayList<>();
+        List<String> wlist = new ArrayList<>();
+        List<Map<String, String>> Wresult = new ArrayList<>();
+        List<Map<String, Object>> cList = null;
         if (!matchingLists.isEmpty()) {
             for (String listName : matchingLists) {
                 if (listName.contains("건강")) {
@@ -232,49 +240,192 @@ public class RestaurantController {
                     indexList.add(4);
                 }
             }
+
+            List<Integer> distinctList = new ArrayList<>(new HashSet<>(indexList));
+
+
+            String maxId = null;
+            float maxSum = Float.MIN_VALUE;
+
+            for (Map.Entry<String, List<Float>> entry : infoWeight.entrySet()) {
+                String id = entry.getKey();
+                List<Float> values = entry.getValue();
+
+                if (distinctList.size() == 1) {
+                    float sum = values.get(distinctList.get(0));
+                    if (sum > maxSum) {
+                        maxSum = sum;
+                        maxId = id;
+                    }
+                } else if (distinctList.size() == 2) {
+                    float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1));
+                    if (sum > maxSum) {
+                        maxSum = sum;
+                        maxId = id;
+                    }
+                } else if (distinctList.size() == 3) {
+                    float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1)) + values.get(distinctList.get(2));
+                    if (sum > maxSum) {
+                        maxSum = sum;
+                        maxId = id;
+                    }
+                } else if (distinctList.size() == 4) {
+                    float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1)) + values.get(distinctList.get(2)) + values.get(distinctList.get(3));
+                    if (sum > maxSum) {
+                        maxSum = sum;
+                        maxId = id;
+                    }
+                }
+            }
+
+
+            // 선택한 ID와 다른 ID들의 유사도를 계산하여 리스트에 저장
+            //List<IdSimilarity> idSimilarities = new ArrayList<>();
+            //for (Map.Entry<String, List<Float>> entry : infoWeight.entrySet()) {
+            //    String id = entry.getKey();
+            //    List<Float> weightList = entry.getValue();
+            //    if (!id.equals(maxId)) {
+            //        float similarity = calculateSimilarity(infoWeight.get(maxId), weightList);
+            //        idSimilarities.add(new IdSimilarity(id, similarity));
+            //    }
+            //}
+            // 유사도에 따라 내림차순으로 정렬
+            //idSimilarities.sort(Comparator.comparing(IdSimilarity::getSimilarity).reversed());
+            List<IdSimilarity> idSimilarities = new ArrayList<>();
+            for (Map.Entry<String, List<Float>> entry : infoWeight.entrySet()) {
+                String id = entry.getKey();
+                List<Float> weightList = entry.getValue();
+                float similarity = calculateSimilarity(infoWeight.get(maxId), weightList);
+                idSimilarities.add(new IdSimilarity(id, similarity));
+            }
+
+// 유사도에 따라 내림차순으로 정렬
+            idSimilarities.sort(Comparator.comparing(IdSimilarity::getSimilarity).reversed());
+
+            // 정렬된 결과 출력
+            System.out.println("ID들의 유사도에 따른 내림차순 정렬:");
+            for (IdSimilarity idSimilarity : idSimilarities) {
+
+
+                List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByIdAsString(idSimilarity.getId());
+                for (Restaurant_Information restaurantInformation : restaurantInformationList) {
+
+                    Map<String, String> infoMap = new HashMap<>();
+                    Map<String, Float> infoRate = new HashMap<>();
+
+                    infoMap.put("ID", restaurantInformation.getId());
+                    infoMap.put("NAME", restaurantInformation.getName());
+                    infoMap.put("LOCATION", restaurantInformation.getLocation());
+                    infoMap.put("TIME", restaurantInformation.getTime());
+                    infoMap.put("NUMBER", restaurantInformation.getNumber());
+                    infoRate.put("RATE", restaurantInformation.getRate());
+
+                    WresultRate.add(infoRate);
+                    WresultList.add(infoMap);
+                }
+                //wlist.add(idSimilarity.getId());
+                System.out.println("ID: " + idSimilarity.getId() + ", 유사도: " + idSimilarity.getSimilarity());
+            }
+            cList = new ArrayList<>();
+
+// WresultRate와 WresultList의 크기가 같은지 확인
+            if (WresultRate.size() == WresultList.size()) {
+                int size = WresultRate.size();
+
+                for (int i = 0; i < size; i++) {
+                    Map<String, Object> combinedMap = new HashMap<>();
+
+                    // WresultRate에서 정보 가져오기
+                    Map<String, Float> infoRate = WresultRate.get(i);
+                    for (Map.Entry<String, Float> entry : infoRate.entrySet()) {
+                        String key = entry.getKey();
+                        Float value = entry.getValue();
+                        combinedMap.put(key, value);
+                    }
+
+                    // WresultList에서 정보 가져오기
+                    Map<String, String> infoMap = WresultList.get(i);
+                    for (Map.Entry<String, String> entry : infoMap.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        combinedMap.put(key, value);
+                    }
+
+                    cList.add(combinedMap);
+                }
+            }
+
+
+            //combinedList = WcombinedList;
+            combinedList = cList;
         }
-        List<Integer> distinctList = new ArrayList<>(new HashSet<>(indexList));
 
 
+        //return infoWeight.toString();
+        return combinedList;
+    }
 
-        String maxId = null;
-        float maxSum = Float.MIN_VALUE;
-
-        for (Map.Entry<String, List<Float>> entry : infoWeight.entrySet()) {
-            String id = entry.getKey();
-            List<Float> values = entry.getValue();
-
-            if(distinctList.size() == 1){
-                float sum = values.get(distinctList.get(0));
-                if (sum > maxSum) {
-                    maxSum = sum;
-                    maxId = id;
-                }
-            }
-            else if (distinctList.size() == 2) {
-                float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1));
-                if (sum > maxSum) {
-                    maxSum = sum;
-                    maxId = id;
-                }
-            }
-            else if (distinctList.size() == 3) {
-                float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1))+ values.get(distinctList.get(2));
-                if (sum > maxSum) {
-                    maxSum = sum;
-                    maxId = id;
-                }
-            }
-            else if (distinctList.size() == 4) {
-                float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1))+ values.get(distinctList.get(2))+ values.get(distinctList.get(3));
-                if (sum > maxSum) {
-                    maxSum = sum;
-                    maxId = id;
-                }
-            }
+    // 피어슨 유사도 계산 메서드
+    private static float calculateSimilarity(List<Float> list1, List<Float> list2) {
+        // 리스트의 길이가 다르면 유사도를 계산할 수 없으므로 0을 반환
+        if (list1.size() != list2.size()) {
+            return 0.0f;
         }
 
-        return maxId;
+        int n = list1.size(); // 리스트의 길이
+
+        float sum1 = 0.0f; // 리스트1의 합
+        float sum2 = 0.0f; // 리스트2의 합
+        float sum1Sq = 0.0f; // 리스트1 제곱의 합
+        float sum2Sq = 0.0f; // 리스트2 제곱의 합
+        float pSum = 0.0f; // 곱의 합
+
+        for (int i = 0; i < n; i++) {
+            float val1 = list1.get(i);
+            float val2 = list2.get(i);
+
+            sum1 += val1;
+            sum2 += val2;
+            sum1Sq += val1 * val1;
+            sum2Sq += val2 * val2;
+            pSum += val1 * val2;
+        }
+
+        // 피어슨 유사도 계산
+        float numerator = pSum - (sum1 * sum2 / n);
+        float denominator = (float) Math.sqrt((sum1Sq - (sum1 * sum1 / n)) * (sum2Sq - (sum2 * sum2 / n)));
+
+        // 분모가 0인 경우에는 유사도를 0으로 설정하여 반환
+        if (denominator == 0.0f) {
+            return 0.0f;
+        }
+
+        float similarity = numerator / denominator;
+
+        return similarity;
+    }
+
+    // ID와 유사도를 저장하는 클래스
+    static class IdSimilarity {
+        private String id;
+        private float similarity;
+
+        public IdSimilarity(String id, float similarity) {
+            this.id = id;
+            this.similarity = similarity;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public float getSimilarity() {
+            return similarity;
+        }
+
+
+
+        //return maxId;
         //return infoWeight.toString();
 
 
