@@ -32,7 +32,7 @@ public class RestaurantController {
         Set<String> restaurantIds = new HashSet<>();
         List<String> restaurantTypes = new ArrayList<>();
         //4자리 이상 숫자 뽑기
-        Pattern pattern = Pattern.compile("\\b(\\d{4,})\\b"); // 4자리 이상 숫자 패턴
+        Pattern pattern = Pattern.compile("\\b(\\d{4,})\\b원"); // 4자리 이상 숫자 패턴
         Matcher matcher = pattern.matcher(searchValue);
         int quantityThreshold = 0;
         if (matcher.find()) {
@@ -41,6 +41,21 @@ public class RestaurantController {
         }
         //띄어쓰기 빼고 단어 추출
         String[] SearchNoSpace = searchValue.split(" ");
+        List<String> modifiedList = new ArrayList<>();
+        for (String word : SearchNoSpace) {
+            if (word.equals("일식집")) {
+                modifiedList.add("일식");
+            } else if (word.equals("양식집")) {
+                modifiedList.add("양식");
+            } else if (word.equals("한식집")) {
+                modifiedList.add("한식");
+            } else if (word.equals("중식집")) {
+                modifiedList.add("중식");
+            } else {
+                modifiedList.add(word);
+            }
+        }
+        SearchNoSpace = modifiedList.toArray(new String[0]);
         List<String> noSearch = new ArrayList<>();
         //뺄 단어들 리스트
         List<String> noSearchNouns = new ArrayList<>();
@@ -55,7 +70,10 @@ public class RestaurantController {
                 int intValue = Integer.parseInt(value.replace("만원", ""));
                 noSearchNouns.add("만원");
                 quantityThreshold = intValue * 10000;
-                ;
+            }
+            else if (value.matches("만원")){
+                noSearchNouns.add("만원");
+                quantityThreshold = 10000;
             }
         }
         //완전 똑같은 메뉴로 검색할 시 검색어 저장
