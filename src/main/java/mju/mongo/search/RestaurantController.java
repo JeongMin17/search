@@ -24,7 +24,7 @@ public class RestaurantController {
     @Autowired
     private RestaurantMenuPriceMain restaurantMenuFoodpriceMain;
     @GetMapping("/searchRestaurant")
-    public List<Map<String, Object>> searchRestaurant(@RequestParam("searchValue") String searchValue) {
+    public String searchRestaurant(@RequestParam("searchValue") String searchValue) {
         // 코모란을 사용하여 명사 추출
         Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
         KomoranResult komoranResult = komoran.analyze(searchValue);
@@ -139,18 +139,32 @@ public class RestaurantController {
         }
         List<Map<String, String>> resultList = new ArrayList<>();
         List<Map<String, Float>> resultRate = new ArrayList<>();
+        //List<Float> weight = new ArrayList<>();
+        Map<String, List<Float>> infoWeight = new HashMap<>();
 
         for (String noun : restaurantIds) {
             List<Restaurant_Information> restaurantInformationList = restaurantRepository.findByNameContainingOrLocationContainingOrTimeContaining(noun, noun, noun, noun);
             for (Restaurant_Information restaurantInformation : restaurantInformationList) {
                 Map<String, String> infoMap = new HashMap<>();
                 Map<String, Float> infoRate = new HashMap<>();
+
+                List<Float> weight = new ArrayList<>();
+
                 infoMap.put("ID", restaurantInformation.getId());
                 infoMap.put("NAME", restaurantInformation.getName());
                 infoMap.put("LOCATION", restaurantInformation.getLocation());
                 infoMap.put("TIME", restaurantInformation.getTime());
                 infoMap.put("NUMBER", restaurantInformation.getNumber());
                 infoRate.put("RATE", restaurantInformation.getRate());
+
+                weight.add(restaurantInformation.getHealth());
+                weight.add(restaurantInformation.getDate());
+                weight.add(restaurantInformation.getMeeting());
+                weight.add(restaurantInformation.getSingle());
+                weight.add(restaurantInformation.getLowcost());
+
+                infoWeight.put(restaurantInformation.getId(),weight);
+
                 resultRate.add(infoRate);
                 resultList.add(infoMap);
             }
@@ -174,11 +188,102 @@ public class RestaurantController {
             }
         }
 
-        return combinedList;
-        //return resultList;
+        //return combinedList;
+
+
+        List<String> Health = Arrays.asList("건강","영양","위생","청결","채소","저칼로리","바프","건강한","위생적인","다이어트","깨끗한","채식","건강하게","웰빙","식단");
+        List<String> date = Arrays.asList("데이트","인스타","감성","애인","연인","갬성","여자친구","남자친구","여친","남친","인스타그램","데이트장소","데이트코스","만남","인테리어","분위기");
+        List<String> meeting = Arrays.asList("모임","개강파티","파티","소주","회식","가족","모여서","다같이","동료","가족모임","신나게","단체","단체석","생일","넓은");
+        List<String> single = Arrays.asList("혼밥","조용한","조용히","혼자","간단히","홀로","간편히","간편하게","여유롭게","가볍게","고독","한끼","편한","혼자서","간단하게");
+        List<String> lowcost = Arrays.asList("가성비","싸고","저렴","저렴한","싸게","물가","저렴하게","혜자","갓성비","효율적인","가격대비","대학생","낮은가격","부담없이","학생","거지");
+
+
+        List<List<String>> lists = Arrays.asList(Health, date, meeting, single, lowcost);
+        List<String> matchingLists = new ArrayList<>();
+
+
+        for (List<String> list : lists) {
+            Set<String> set = new HashSet<>(list);
+            for (String term : SearchNoSpace) {
+                if (set.contains(term)) {
+                    matchingLists.add(list.toString());
+                    break;
+                }
+            }
+            for (String term : nouns) {
+                if (set.contains(term)) {
+                    matchingLists.add(list.toString());
+                    break;
+                }
+            }
+        }
+        List<Integer> indexList = new ArrayList<>();
+        if (!matchingLists.isEmpty()) {
+            for (String listName : matchingLists) {
+                if (listName.contains("건강")) {
+                    indexList.add(0);
+                } else if (listName.contains("데이트")) {
+                    indexList.add(1);
+                } else if (listName.contains("모임")) {
+                    indexList.add(2);
+                } else if (listName.contains("혼밥")) {
+                    indexList.add(3);
+                } else if (listName.contains("가성비")) {
+                    indexList.add(4);
+                }
+            }
+        }
+        List<Integer> distinctList = new ArrayList<>(new HashSet<>(indexList));
+
+
+
+        String maxId = null;
+        float maxSum = Float.MIN_VALUE;
+
+        for (Map.Entry<String, List<Float>> entry : infoWeight.entrySet()) {
+            String id = entry.getKey();
+            List<Float> values = entry.getValue();
+
+            if(distinctList.size() == 1){
+                float sum = values.get(distinctList.get(0));
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    maxId = id;
+                }
+            }
+            else if (distinctList.size() == 2) {
+                float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1));
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    maxId = id;
+                }
+            }
+            else if (distinctList.size() == 3) {
+                float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1))+ values.get(distinctList.get(2));
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    maxId = id;
+                }
+            }
+            else if (distinctList.size() == 4) {
+                float sum = values.get(distinctList.get(0)) + values.get(distinctList.get(1))+ values.get(distinctList.get(2))+ values.get(distinctList.get(3));
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    maxId = id;
+                }
+            }
+        }
+
+        return maxId;
+        //return infoWeight.toString();
+
+
+
+        //return resultList.toString();
         //return new ArrayList<>(restaurantIds);
         //return nouns;
     }
+
     @GetMapping("/RestaurantInfo")
     public Map<String, Object> searchRestaurantINFO(@RequestParam("searchID") String searchID) {
         List<Map<String, String>> resultList = new ArrayList<>();

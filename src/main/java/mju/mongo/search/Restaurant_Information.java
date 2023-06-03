@@ -22,6 +22,16 @@ public class Restaurant_Information {
     private Float lng;
     @Field("RATE")
     private Float rate;
+    @Field("HEALTH")
+    private Float health;
+    @Field("DATE")
+    private Float date;
+    @Field("MEETING")
+    private Float meeting;
+    @Field("SINGLE")
+    private Float single;
+    @Field("LOWCOST")
+    private Float lowcost;
 
 
     // 생성자, 게터(getter), 세터(setter), toString() 등의 필요한 메서드를 추가합니다
@@ -96,6 +106,13 @@ public class Restaurant_Information {
 
     public Float getRate(){return rate;}
     public void setRate(Float rate){this.rate = rate;}
+
+    public Float getHealth(){return health;}
+    public Float getDate(){return date;}
+    public Float getMeeting(){return meeting;}
+    public Float getSingle(){return single;}
+    public Float getLowcost(){return lowcost;}
+
     @Override
     public String toString() {
         return "Restaurant{" +
