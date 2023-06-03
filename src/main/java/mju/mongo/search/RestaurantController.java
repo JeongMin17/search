@@ -31,8 +31,9 @@ public class RestaurantController {
         List<String> nouns = komoranResult.getNouns();
         Set<String> restaurantIds = new HashSet<>();
         List<String> restaurantTypes = new ArrayList<>();
-        //4자리 이상 숫자 뽑기
-        Pattern pattern = Pattern.compile("\\b(\\d{4,})\\b원"); // 4자리 이상 숫자 패턴
+
+        //4자리수 저장
+        Pattern pattern = Pattern.compile("(\\d{4,})원");
         Matcher matcher = pattern.matcher(searchValue);
         int quantityThreshold = 0;
         if (matcher.find()) {
